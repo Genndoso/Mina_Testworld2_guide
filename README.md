@@ -27,43 +27,47 @@ chmod 700 ~/keys
 ```
 nano ~/keys/my-wallet
 ```
-- Press Ctrl+X to save the file
-- Press Crtl+Y to exit
+* Press Ctrl+X to save the file
+* Press Y then ENTER to exit
 ```
 chmod 600 ~/keys/my-wallet
 ```
-*	 my-wallet.pub dosyasını nano ile düzenle deyip yine pcmize indirip açtığımız dosyadaki community-216.pub içindekileri buraya kopyalıyoruz ctrl x y ile kaydediyoruz
+*	Paste the community-151-key.pub into /keys/my-wallet.pub
 ```
 nano ~/keys/my-wallet.pub
 ```
-### Çalıştırma manuel
+## Generating libp2p keypair
 
-
-
-Not: Yeni cüzdanınızın şifresini, çıkardığınız topluluk-216-password.txt dosyasında bulabilirsiniz. bu şifreyi altaki `MINA_PRIVKEY_PASS="şifre"` yazan yere yazıcanız. ctrl x y enterla kaydet
-* altaki kodlada olusturduğunuz şifreyi `MINA_LIBP2P_PASS="şifre"` buraya yazıcaksınız.
-* UPTIME_PRIVKEY_PASS="şifre" buraya,  burda yazdığın şifreyi yazınız MINA_PRIVKEY_PASS="şifre"
+* Generate keypair from libp2p. Be sure that this keypair is saved not in the same file as your keypair obtained from email
+You will be asked to put a password. You have to paste password from community-151-password from email.
 
 ```
 mina libp2p generate-keypair -privkey-path /root/keys/keys
 ```
 ---------------
+## Configure yourn ode
+* Open .mina-env file
 ```
 nano ~/.mina-env
 ```
-* --external-ip `ipniziyazınız`  buraya sunucu ipnizi yazınız
-* nano ~/.mina-env dedikten sonra altaki kodu kopyalayıp içine yapıstırıyoruz mubarekler sona duzeltilicek yerleri düzeltin 
+* Paste the following config into .mina-env
+*  in --external-ip your have to put ip of your server and in `MINA_PRIVKEY_PASS`, `UPTIME_PRIVKEY_PASS` and `MINA_LIBP2P_PASS` it is needed to paste your community-151-password
 ```
-MINA_PRIVKEY_PASS="şifre"
-UPTIME_PRIVKEY_PASS="şifre"
-EXTRA_FLAGS="--log-json --log-snark-work-gossip true --internal-tracing --insecure-rest-server --log-level Debug --file-log-level Debug --config-directory /root/.mina-config/ --external-ip ipniziyazınız --itn-keys  f1F38+W3zLcc45fGZcAf9gsZ7o9Rh3ckqZQw6yOJiS4=,6GmWmMYv5oPwQd2xr6YArmU1YXYCAxQAxKH7aYnBdrk=,ZJDkF9EZlhcAU1jyvP3m9GbkhfYa0yPV+UdAqSamr1Q=,NW2Vis7S5G1B9g2l9cKh3shy9qkI1lvhid38763vZDU=,Cg/8l+JleVH8yNwXkoLawbfLHD93Do4KbttyBS7m9hQ= --itn-graphql-port 3089 --uptime-submitter-key  /root/keys/my-wallet --uptime-url https://block-producers-uptime-itn.minaprotocol.tools/v1/submit --metrics-port 10001 --enable-peer-exchange  true --libp2p-keypair /root/keys/keys --log-precomputed-blocks true --max-connections 200 --peer-list-url  https://storage.googleapis.com/seed-lists/testworld-2-0_seeds.txt --generate-genesis-proof  true --block-producer-key /root/keys/my-wallet --node-status-url https://nodestats-itn.minaprotocol.tools/submit/stats  --node-error-url https://nodestats-itn.minaprotocol.tools/submit/stats  --file-log-rotations 500"
+MINA_PRIVKEY_PASS="community-151-password"
+UPTIME_PRIVKEY_PASS="community-151-password"
+EXTRA_FLAGS="--log-json --log-snark-work-gossip true --internal-tracing --insecure-rest-server --config-directory /root/.mina-config/ --external-ip  `ip of your server`   --itn-keys  f1F38+W3zLcc45fGZcAf9gsZ7o9Rh3ckqZQw6yOJiS4=,6GmWmMYv5oPwQd2xr6YArmU1YXYCAxQAxKH7aYnBdrk=,ZJDkF9EZlhcAU1jyvP3m9GbkhfYa0yPV+UdAqSamr1Q=,NW2Vis7S5G1B9g2l9cKh3shy9qkI1lvhid38763vZDU=,Cg/8l+JleVH8yNwXkoLawbfLHD93Do4KbttyBS7m9hQ= --itn-graphql-port 3089 --uptime-submitter-key  /root/keys/my-wallet --uptime-url https://block-producers-uptime-itn.minaprotocol.tools/v1/submit --metrics-port 10001 --enable-peer-exchange  true --libp2p-keypair /root/keys/keys --log-precomputed-blocks true --max-connections 200  --generate-genesis-proof  true --block-producer-key /root/keys/my-wallet --node-status-url https://nodestats-itn.minaprotocol.tools/submit/stats  --node-error-url https://nodestats-itn.minaprotocol.tools/submit/stats  --file-log-rotations 500"
 RAYON_NUM_THREADS=6
-MINA_LIBP2P_PASS="your "
+MINA_LIBP2P_PASS="community-151-password"
+```
+* Give access to /.mina-env
+```
+chmod 600 ~/.mina-env
 ```
 
-Not: ctrl c daha sonra :qa yazıp enter enter daha sonra :exit yaz enter
+## Change peer list
+* Go to `/usr/lib/systemd/user/mina.service` and open in any text editor
+* Cahnge the peer_list_url `from https://storage.googleapis.com/seed-lists/berkeley_seeds.txt` to `https://storage.googleapis.com/seed-lists/testworld-2-0_seeds.txt`
 ```
-vi /usr/lib/systemd/user/mina.service
 [Unit]
 Description=Mina Daemon Service
 After=network.target
@@ -85,17 +89,21 @@ ExecStop=/usr/local/bin/mina client stop-daemon
 [Install]
 WantedBy=default.target
 ```
+
+## Launch Mina node
 ```
-chmod 600 ~/.mina-env
 systemctl --user daemon-reload
 systemctl --user restart mina
 systemctl --user enable mina
 sudo loginctl enable-linger
+```
+* If you did all correctly you will see running logs
+* Run your logs
+```
 journalctl --user-unit mina -n 1000 -f
 ```
 
-
-* After launch check the GIT SHA-1 and chain ID:
+* After 5 min check node status and verify the GIT SHA-1 and chain ID:
 * Git SHA-1: 55b7818
 * Chain ID: 332c8cc05ba8de9efc23a011f57015d8c9ec96fac81d5d3f7a06969faf4bce92
 
