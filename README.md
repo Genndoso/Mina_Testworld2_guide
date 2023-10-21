@@ -45,7 +45,7 @@ You will be asked to put a password. You have to paste password from community-1
 mina libp2p generate-keypair -privkey-path /root/keys/keys
 ```
 ---------------
-## Configure yourn ode
+## Configure your node
 * Open .mina-env file
 ```
 nano ~/.mina-env
